@@ -3,6 +3,7 @@ import os
 import pandas as pd
 from dotenv import load_dotenv
 from supabase import create_client, Client
+from reemplazar_etiquetas import reemplazar_etiquetas
 
 # 1. Configuración de la página
 st.set_page_config(page_title="Sistema de Licitaciones", page_icon="🏗️", layout="wide")
@@ -81,3 +82,65 @@ if conexion_ok:
                 
         except Exception as err_leer:
             st.error(f"Error al leer el listado de empresas: {err_leer}")
+
+# 4. Generador de Documentos
+st.divider()
+st.write("### 📄 Generador de Documentos")
+
+if conexion_ok:
+    try:
+        # Consultar las empresas para el dropdown
+        empresas_data = supabase.table("empresas").select("*").execute().data
+        
+        if empresas_data:
+            # Crear diccionario para fácil búsqueda
+            empresas_dict = {e['nombre']: e for e in empresas_data}
+            nombres_empresas = list(empresas_dict.keys())
+            
+            empresa_seleccionada = st.selectbox("Selecciona una empresa para generar el documento:", nombres_empresas)
+            
+            if st.button("Generar Escrito de Prueba"):
+                datos_empresa = empresas_dict[empresa_seleccionada]
+                
+                # Configurar los reemplazos para la plantilla
+                reemplazos = {
+                    "{{REPRESENTANTE}}": datos_empresa.get('representante', ''),
+                    "{{RFC}}": datos_empresa.get('rfc', '')
+                }
+                
+                archivo_plantilla = "plantilla_prueba.docx"
+                archivo_salida = "resultado_final.docx"
+                
+                if os.path.exists(archivo_plantilla):
+                    try:
+                        # Ejecutar la función de reemplazo de nuestro otro script
+                        reemplazar_etiquetas(archivo_plantilla, archivo_salida, reemplazos)
+                        
+                        # Leer el archivo generado para el botón de descarga
+                        with open(archivo_salida, "rb") as file:
+                            bytes_docx = file.read()
+                            
+                        # Guardar en session_state para que el botón de descarga no desaparezca al refrescar
+                        st.session_state['docx_descarga'] = bytes_docx
+                        st.session_state['docx_nombre'] = f"Escrito_{datos_empresa['nombre'].replace(' ', '_')}.docx"
+                        st.session_state['docx_empresa'] = empresa_seleccionada
+                        
+                        st.success("¡Documento generado exitosamente! Haz clic en el botón de abajo para descargarlo.")
+                    except Exception as err_gen:
+                        st.error(f"Error al generar el documento Word: {err_gen}")
+                else:
+                    st.error(f"No se encontró el archivo de plantilla: {archivo_plantilla} en la carpeta.")
+            
+            # Mostrar botón de descarga si existe el documento generado en sesión y corresponde a la empresa seleccionada
+            if 'docx_descarga' in st.session_state and st.session_state.get('docx_empresa') == empresa_seleccionada:
+                st.download_button(
+                    label="📥 Descargar Escrito de Prueba",
+                    data=st.session_state['docx_descarga'],
+                    file_name=st.session_state['docx_nombre'],
+                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                )
+                
+        else:
+            st.info("Registra al menos una empresa para poder generar documentos.")
+    except Exception as e:
+        st.error(f"Error al cargar las empresas para el generador: {e}")
