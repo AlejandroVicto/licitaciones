@@ -144,3 +144,90 @@ if conexion_ok:
             st.info("Registra al menos una empresa para poder generar documentos.")
     except Exception as e:
         st.error(f"Error al cargar las empresas para el generador: {e}")
+
+# 5. Bóveda Digital
+st.divider()
+st.write("### 🗄️ Bóveda Digital")
+
+if conexion_ok:
+    try:
+        empresas_data_boveda = supabase.table("empresas").select("*").execute().data
+        
+        if empresas_data_boveda:
+            empresas_dict_boveda = {e['nombre']: e for e in empresas_data_boveda}
+            nombres_empresas_boveda = list(empresas_dict_boveda.keys())
+            
+            empresa_boveda_seleccionada = st.selectbox("Selecciona una empresa para la Bóveda:", nombres_empresas_boveda, key="boveda_empresa")
+            datos_empresa_boveda = empresas_dict_boveda[empresa_boveda_seleccionada]
+            
+            # Usar 'id' si existe en la base de datos, si no, usar 'rfc' como identificador de carpeta
+            empresa_id = datos_empresa_boveda.get('id', datos_empresa_boveda.get('rfc'))
+            
+            col_boveda1, col_boveda2 = st.columns(2)
+            
+            with col_boveda1:
+                st.write("#### 📤 Subir Documento")
+                tipo_documento = st.selectbox(
+                    "Tipo de Documento:", 
+                    ["Constancia_SAT", "INE_Representante", "Acta_Constitutiva"]
+                )
+                
+                archivo_subir = st.file_uploader("Selecciona un archivo PDF", type=['pdf'])
+                
+                if st.button("Subir a la Bóveda"):
+                    if archivo_subir is not None:
+                        ruta_destino = f"{empresa_id}/{tipo_documento}.pdf"
+                        try:
+                            file_bytes = archivo_subir.getvalue()
+                            supabase.storage.from_('documentos').upload(
+                                path=ruta_destino, 
+                                file=file_bytes, 
+                                file_options={"content-type": "application/pdf", "upsert": "true"}
+                            )
+                            st.success(f"¡{tipo_documento}.pdf subido correctamente!")
+                        except Exception as e_upload:
+                            st.error(f"Error al subir el archivo: {e_upload}")
+                    else:
+                        st.warning("⚠️ Por favor, selecciona un archivo PDF primero.")
+            
+            with col_boveda2:
+                st.write("#### 📁 Archivos en la Nube")
+                try:
+                    lista_archivos = supabase.storage.from_('documentos').list(str(empresa_id))
+                    
+                    if lista_archivos:
+                        # Filtrar posibles placeholders de carpeta de Supabase
+                        archivos_reales = [a for a in lista_archivos if a['name'] != '.emptyFolderPlaceholder']
+                        if archivos_reales:
+                            for arch in archivos_reales:
+                                col_nom, col_btn = st.columns([7, 3])
+                                with col_nom:
+                                    st.write(f"📄 {arch['name']}")
+                                with col_btn:
+                                    ruta_archivo = f"{empresa_id}/{arch['name']}"
+                                    try:
+                                        # Descargar el archivo directamente a la memoria RAM
+                                        bytes_pdf = supabase.storage.from_('documentos').download(ruta_archivo)
+                                        
+                                        # Conectar los bytes al botón de descarga con un key único
+                                        st.download_button(
+                                            label="⬇️ Descargar",
+                                            data=bytes_pdf,
+                                            file_name=arch['name'],
+                                            mime="application/pdf",
+                                            key=f"dl_btn_{empresa_id}_{arch['name']}"
+                                        )
+                                    except Exception as e_descarga:
+                                        st.error("No disponible")
+                        else:
+                            st.info("No hay documentos guardados para esta empresa.")
+                    else:
+                        st.info("No hay documentos guardados para esta empresa.")
+                except Exception:
+                    # En algunos casos, si la carpeta no existe lanza una excepción
+                    st.info("No hay documentos guardados para esta empresa.")
+                    
+        else:
+            st.info("Registra al menos una empresa para usar la Bóveda Digital.")
+    except Exception as e_boveda:
+        st.error(f"Error al cargar la Bóveda Digital: {e_boveda}")
