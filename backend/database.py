@@ -1,5 +1,5 @@
 from backend.connection import supabase, conexion_ok
-
+#Funciones basicas de la base de datos
 def get_empresas():
     if not conexion_ok:
         return []

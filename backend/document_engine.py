@@ -1,6 +1,6 @@
 import os
 from docx import Document
-
+#Reemplaza las etiquetas del documento con los datos de la empresa
 def reemplazar_etiquetas(plantilla_path, salida_path, reemplazos):
     doc = Document(plantilla_path)
     

@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 from supabase import create_client, Client
 
 load_dotenv()
-
+#Conectamos mediante un API a la base de datos de supabase
 url: str = os.environ.get("SUPABASE_URL")
 key: str = os.environ.get("SUPABASE_KEY")
 

@@ -1,6 +1,6 @@
 import streamlit as st
 import streamlit_antd_components as sac
-
+#Barra lateral de la aplicación 
 def render_sidebar():
     with st.sidebar:
         st.markdown(
@@ -25,7 +25,7 @@ def render_sidebar():
         ], color='#F5A623', open_all=False, size='md')
         
         st.divider()
-        if st.button("🚪 Cambiar Empresa", use_container_width=True):
+        if st.button(" Cambiar Empresa", use_container_width=True):
             st.session_state.empresa_activa = None
             st.rerun()
             

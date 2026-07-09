@@ -1,5 +1,6 @@
 from backend.connection import supabase, conexion_ok
-
+#Funciones de almacenamiento en supabase
+#Sube los archivos a la base de datos
 def upload_document(empresa_id, tipo_documento, file_bytes):
     if not conexion_ok:
         return False, "Sin conexión a la base de datos"
@@ -13,7 +14,7 @@ def upload_document(empresa_id, tipo_documento, file_bytes):
         return True, "Archivo subido correctamente"
     except Exception as e:
         return False, str(e)
-
+#Lista los archivos de la base de datos
 def list_documents(empresa_id):
     if not conexion_ok:
         return []
@@ -25,7 +26,7 @@ def list_documents(empresa_id):
         return []
     except Exception:
         return []
-
+#Descarga los archivos de la base de datos
 def download_document(empresa_id, filename):
     if not conexion_ok:
         return None
