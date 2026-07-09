@@ -17,6 +17,7 @@ def render_sidebar():
             sac.MenuItem('Información Básica', icon='info-circle'),
             sac.MenuItem('Generar Documentos', icon='file-earmark-word'),
             sac.MenuItem('Bóveda Digital', icon='cloud-arrow-down', children=[
+                sac.MenuItem('Guía de Documentos', icon='book'),
                 sac.MenuItem('Subir y Actualizar', icon='cloud-upload'),
                 sac.MenuItem('Explorar y Descargar', icon='folder2-open'),
             ]),

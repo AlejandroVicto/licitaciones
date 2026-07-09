@@ -10,7 +10,7 @@ from frontend.views.edit_company import render_edit_company
 st.set_page_config(page_title="Sistema de Licitaciones", page_icon="🏗️", layout="wide")
 
 if not conexion_ok:
-    st.error("❌ Error: No se pudo conectar a Supabase. Verifica tus credenciales en el archivo .env")
+    st.error("Error: No se pudo conectar a Supabase. Verifica tus credenciales en el archivo .env")
     st.stop()
 
 # Inicializar estado de la sesión
@@ -27,6 +27,8 @@ else:
         render_info_view()
     elif opcion == "Generar Documentos":
         render_doc_gen_view()
+    elif opcion == "Guía de Documentos":
+        render_boveda_view(modo="guia")
     elif opcion == "Subir y Actualizar":
         render_boveda_view(modo="subir")
     elif opcion == "Explorar y Descargar":
