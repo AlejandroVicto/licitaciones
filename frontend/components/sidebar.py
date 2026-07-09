@@ -1,5 +1,5 @@
 import streamlit as st
-from streamlit_option_menu import option_menu
+import streamlit_antd_components as sac
 
 def render_sidebar():
     with st.sidebar:
@@ -13,24 +13,15 @@ def render_sidebar():
             unsafe_allow_html=True
         )
         
-        opcion = option_menu(
-            menu_title=None,
-            options=["Información Básica", "Generar Documentos", "Bóveda Digital", "Editar Empresa"],
-            icons=["info-circle", "file-earmark-word", "cloud-arrow-up", "pencil-square"],
-            menu_icon="cast",
-            default_index=0,
-            styles={
-                "container": {"padding": "0!important", "background-color": "transparent"},
-                "icon": {"color": "inherit", "font-size": "18px"},
-                "nav-link": {
-                    "font-size": "16px",
-                    "text-align": "left",
-                    "margin": "5px 0px",
-                    "--hover-color": "#eee"
-                },
-                "nav-link-selected": {"background-color": "#F5A623", "color": "white"},
-            }
-        )
+        opcion = sac.menu([
+            sac.MenuItem('Información Básica', icon='info-circle'),
+            sac.MenuItem('Generar Documentos', icon='file-earmark-word'),
+            sac.MenuItem('Bóveda Digital', icon='cloud-arrow-down', children=[
+                sac.MenuItem('Subir y Actualizar', icon='cloud-upload'),
+                sac.MenuItem('Explorar y Descargar', icon='folder2-open'),
+            ]),
+            sac.MenuItem('Editar Empresa', icon='pencil-square'),
+        ], color='#F5A623', open_all=False, size='md')
         
         st.divider()
         if st.button("🚪 Cambiar Empresa", use_container_width=True):

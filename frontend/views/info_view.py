@@ -2,8 +2,7 @@ import streamlit as st
 
 def render_info_view():
     empresa = st.session_state.empresa_activa
-    st.markdown(f"## 🏢 Resumen: {empresa.get('nombre', '')}")
-    st.caption("Panel de control de la entidad legal seleccionada")
+    st.markdown(f"## Resumen: {empresa.get('nombre', '')}")
     
     st.write("---")
     
@@ -15,7 +14,7 @@ def render_info_view():
     
     st.write("---")
     
-    # Añadir un poco de texto descriptivo del flujo de trabajo
+    # texto descriptivo del flujo de trabajo
     st.markdown("""
     ### 📌 Flujo de Trabajo Operativo
     1. **Generar Documentos:** Ve a esta sección para autocompletar machotes en formato Word (`.docx`) usando los datos fiscales de esta empresa.

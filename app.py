@@ -27,7 +27,12 @@ else:
         render_info_view()
     elif opcion == "Generar Documentos":
         render_doc_gen_view()
+    elif opcion == "Subir y Actualizar":
+        render_boveda_view(modo="subir")
+    elif opcion == "Explorar y Descargar":
+        render_boveda_view(modo="descargar")
     elif opcion == "Bóveda Digital":
-        render_boveda_view()
+        # Render empty or default since it's just the parent folder now
+        st.info("👈 Selecciona 'Subir y Actualizar' o 'Explorar y Descargar' en el menú lateral.")
     elif opcion == "Editar Empresa":
         render_edit_company()
