@@ -1,7 +1,7 @@
 import streamlit as st
 from backend.connection import supabase, conexion_ok
 
-# Mapeo de módulos solicitado por el usuario
+# Mapeo de módulos
 MODULOS_DOCUMENTOS = {
     "Módulo 1: Legal y Acreditación": [
         "Acta_Constitutiva_y_Modificaciones",
@@ -65,7 +65,7 @@ MODULOS_DOCUMENTOS = {
         "Expediente_Jefe_Laboratorio - Comprobante_domicilio"
     ]
 }
-
+#Renderiza la vista de la bóveda digital con sus diferentes modos
 def render_boveda_view(modo="subir"):
     st.markdown("## 🗄️ Bóveda Digital")
     st.caption("Repositorio seguro estructurado para documentación de licitaciones.")
@@ -77,9 +77,9 @@ def render_boveda_view(modo="subir"):
     modo_label = 'Subir Documentos' if modo == 'subir' else ('Explorar y Descargar' if modo == 'descargar' else 'Guía de Documentos')
     st.write(f"**Modo Actual:** {modo_label}")
     st.write("---")
-    
+    #Renderiza la guía de documentos
     if modo == "guia":
-        st.markdown("### 📘 Manual de Ayuda y Requisitos Documentales")
+        st.markdown("### Manual de Ayuda y Requisitos Documentales")
         
         with st.expander("Módulo 1: Legal y Acreditación (Archivos Fijos y Actualizables)", expanded=True):
             st.markdown("""
@@ -126,7 +126,7 @@ def render_boveda_view(modo="subir"):
         return
     
     
-    # Pestañas para los 4 módulos
+    # Pestañas para los módulos
     nombres_modulos = list(MODULOS_DOCUMENTOS.keys())
     
     # Cargar lista de archivos globalmente para evitar llamadas repetidas
@@ -138,12 +138,10 @@ def render_boveda_view(modo="subir"):
                 archivos_empresa = [a for a in lista if a['name'] != '.emptyFolderPlaceholder']
         except Exception:
             pass
-
-    # Renderizar pestañas horizontales usando sac.tabs
+    
     import streamlit_antd_components as sac
     modulo_actual = sac.tabs([sac.TabsItem(label=m) for m in nombres_modulos], align='center', color='#F5A623')
     
-    # Extraer el prefijo limpio del módulo seleccionado
     prefix_modulo = modulo_actual.split(":")[0].replace("ó", "o").replace(" ", "_")
     
     st.markdown(f"### {modulo_actual}")
@@ -164,8 +162,8 @@ def render_boveda_view(modo="subir"):
                     with st.container():
                         c1, c2 = st.columns([8, 2])
                         nombre_corto = arch['name'].replace(f"{prefix_modulo}_", "")
-                        c1.write(f"✅ {nombre_corto}")
-                        if c2.button("🗑️ Eliminar", key=f"del_up_{id_empresa_destino}_{arch['name']}", use_container_width=True):
+                        c1.write(f" {nombre_corto}")
+                        if c2.button("Eliminar", key=f"del_up_{id_empresa_destino}_{arch['name']}", use_container_width=True):
                             try:
                                 supabase.storage.from_("documentos").remove([f"{id_empresa_destino}/{arch['name']}"])
                                 st.rerun()
@@ -184,7 +182,7 @@ def render_boveda_view(modo="subir"):
                 accept_multiple_files=is_multiple
             )
             
-            if st.button("Subir Documento ☁️", type="primary"):
+            if st.button("Subir Documento", type="primary"):
                 if archivos_subir and conexion_ok:
                     with st.spinner("Subiendo a Supabase Storage..."):
                         lista_archivos = archivos_subir if isinstance(archivos_subir, list) else [archivos_subir]
@@ -215,7 +213,7 @@ def render_boveda_view(modo="subir"):
                     if not conexion_ok:
                         st.error("No hay conexión a Supabase.")
                     else:
-                        st.warning("⚠️ Selecciona un archivo.")
+                        st.warning("Selecciona un archivo.")
                         
     else: # Explorador y Descargas
         with st.container(border=True):
@@ -229,7 +227,7 @@ def render_boveda_view(modo="subir"):
                         with c_file:
                             # Limpiamos un poco el nombre para que sea más legible
                             nombre_legible = arch['name'].replace(f"{prefix_modulo}_", "").replace("_", " ")
-                            st.write(f"📄 **{nombre_legible}**")
+                            st.write(f" **{nombre_legible}**")
                             st.caption(f"Archivo real: {arch['name']}")
                         with c_btn:
                             ruta_archivo = f"{id_empresa_destino}/{arch['name']}"
@@ -238,7 +236,7 @@ def render_boveda_view(modo="subir"):
                                 mime_type = "application/pdf" if arch['name'].endswith(".pdf") else "application/octet-stream"
                                 
                                 st.download_button(
-                                    label="⬇️ Descargar",
+                                    label=" Descargar",
                                     data=bytes_doc,
                                     file_name=arch['name'],
                                     mime=mime_type,

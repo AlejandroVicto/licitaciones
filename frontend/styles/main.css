@@ -1,0 +1,57 @@
+/* Animación global removida para evitar brincos en el menú lateral.
+   Mantendremos las transiciones de los botones y bordes suaves. */
+/* Transiciones suaves y efectos premium para los botones */
+button[data-testid="baseButton-primary"] {
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+    border-radius: 8px !important;
+}
+
+button[data-testid="baseButton-primary"]:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(245, 166, 35, 0.4) !important;
+    filter: brightness(1.05) !important;
+}
+
+button[data-testid="baseButton-secondary"] {
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+    border-radius: 8px !important;
+}
+
+button[data-testid="baseButton-secondary"]:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+    border-color: #F5A623 !important;
+    color: #F5A623 !important;
+}
+
+/* Efecto elegante para los contenedores (borders) */
+div[data-testid="stVerticalBlockBorderWrapper"] {
+    transition: box-shadow 0.3s ease-in-out, transform 0.3s ease-in-out;
+    border-radius: 12px !important;
+}
+
+div[data-testid="stVerticalBlockBorderWrapper"]:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Suavizar la barra lateral */
+section[data-testid="stSidebar"] {
+    transition: width 0.3s ease-in-out !important;
+    border-right: 1px solid rgba(0,0,0,0.05) !important;
+    box-shadow: 2px 0 15px rgba(0,0,0,0.02) !important;
+}
+
+/* Estilizar las cajas de texto y selects */
+div[data-baseweb="input"] > div, div[data-baseweb="select"] > div, div[data-baseweb="textarea"] > div {
+    transition: border-color 0.3s ease, box-shadow 0.3s ease !important;
+    border-radius: 6px !important;
+}
+
+div[data-baseweb="input"] > div:focus-within, div[data-baseweb="select"] > div:focus-within, div[data-baseweb="textarea"] > div:focus-within {
+    border-color: #F5A623 !important;
+    box-shadow: 0 0 0 1px #F5A623 !important;
+}
+
+/* Ocultar el menú de Streamlit arriba a la derecha y el footer para dar look de SPA profesional */
+header {visibility: hidden;}
+footer {visibility: hidden;}
