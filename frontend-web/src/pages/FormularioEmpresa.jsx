@@ -41,7 +41,7 @@ const FormularioEmpresa = () => {
   };
 
   return (
-    <div style={{ padding: '24px', maxWidth: '1000px', margin: '0 auto' }}>
+    <div style={{ padding: '32px', maxWidth: '1600px', margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <Title level={2} style={{ margin: 0 }}>Registrar Nueva Empresa</Title>
         <Button onClick={() => navigate('/')}>Cancelar</Button>

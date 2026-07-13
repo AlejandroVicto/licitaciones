@@ -3,7 +3,10 @@ import BovedaModulo from '../components/BovedaModulo';
 
 const docs = [
   "Acta_Constitutiva_y_Modificaciones",
+  "INE_Administrador_Unico",
   "INE_Representante_Legal",
+  "Comprobante_Domicilio_Administrador",
+  "Comprobante_Domicilio_Representante_Legal",
   "Poder_Notarial",
   "Constancia_Situacion_Fiscal_SAT",
   "Opinion_Cumplimiento_32D_SAT",

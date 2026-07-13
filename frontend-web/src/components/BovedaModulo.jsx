@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, Card, Tabs, Select, Button, Upload, message, List, Popconfirm, Alert, Space } from 'antd';
+import { Typography, Card, Tabs, Select, Button, Upload, message, List, Popconfirm, Alert, Space, Tag } from 'antd';
 import { UploadOutlined, DownloadOutlined, DeleteOutlined } from '@ant-design/icons';
 import useEmpresaStore from '../store/useEmpresaStore';
 import { getDocumentos, subirDocumento, eliminarDocumento, descargarDocumento } from '../services/api';
@@ -11,6 +11,34 @@ const { Option } = Select;
 const BovedaModulo = ({ titulo, documentosPermitidos }) => {
   const empresaSeleccionada = useEmpresaStore((state) => state.empresaSeleccionada);
   const navigate = useNavigate();
+
+  const obtenerDiasVigencia = (docReq) => {
+    if (docReq.includes("Constancia_Situacion_Fiscal")) return 30;
+    if (docReq.includes("Opinion_Cumplimiento_32D_SAT")) return 30;
+    if (docReq.includes("Opinion_Cumplimiento_IMSS")) return 15;
+    if (docReq.includes("Comprobante_Domicilio")) return 90;
+    return null;
+  };
+
+  const calcularEstadoVigencia = (fileItem, docReq) => {
+    const diasPermitidos = obtenerDiasVigencia(docReq);
+    if (!diasPermitidos) return <Tag color="default">Sin Caducidad</Tag>;
+
+    const fechaSubida = new Date(fileItem.updated_at || fileItem.created_at);
+    // Verificar si es una fecha válida
+    if (isNaN(fechaSubida)) return <Tag color="default">Sin Fecha</Tag>;
+
+    const hoy = new Date();
+    const diffTime = hoy - fechaSubida;
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)); 
+    
+    if (diffDays <= diasPermitidos) {
+      return <Tag color="success">Vigente</Tag>;
+    } else {
+      return <Tag color="error">Desactualizado</Tag>;
+    }
+  };
+
   
   const [archivos, setArchivos] = useState([]);
   const [loadingList, setLoadingList] = useState(false);
@@ -114,7 +142,7 @@ const BovedaModulo = ({ titulo, documentosPermitidos }) => {
   };
 
   return (
-    <div style={{ padding: '24px', maxWidth: '1000px', margin: '0 auto' }}>
+    <div style={{ padding: '32px', maxWidth: '1600px', margin: '0 auto' }}>
       <Title level={2}>🗄️ Bóveda Digital</Title>
       <Text type="secondary" style={{ display: 'block', marginBottom: '16px' }}>Repositorio seguro estructurado para documentación de licitaciones.</Text>
       
@@ -132,9 +160,10 @@ const BovedaModulo = ({ titulo, documentosPermitidos }) => {
                   value={tipoSeleccionado} 
                   onChange={setTipoSeleccionado}
                 >
-                  {documentosPermitidos.map(doc => (
-                    <Option key={doc} value={doc}>{doc.replace(/_/g, ' ')}</Option>
-                  ))}
+                  {documentosPermitidos.map(doc => {
+                    const label = doc.replace(/_/g, ' ').replace(/Anios/g, 'Años');
+                    return <Option key={doc} value={doc}>{label}</Option>;
+                  })}
                 </Select>
               </div>
 
@@ -158,25 +187,49 @@ const BovedaModulo = ({ titulo, documentosPermitidos }) => {
           <Tabs.TabPane tab="Explorar y Descargar" key="2">
             <List
               loading={loadingList}
-              dataSource={archivosDelModulo}
-              locale={{ emptyText: 'No hay documentos guardados en este módulo' }}
-              renderItem={item => {
-                const nombreLegible = item.name.replace(`${prefixModulo}_`, "").replace(/_/g, " ");
+              dataSource={documentosPermitidos}
+              renderItem={(docReq) => {
+                const docClean = docReq.replace(/ /g, "_").replace(/\//g, "_").replace(/-/g, "_");
+                const uploadedFiles = archivosDelModulo.filter(f => f.name.includes(docClean));
+                const isUploaded = uploadedFiles.length > 0;
+
                 return (
                   <List.Item
-                    actions={[
-                      <Button type="link" icon={<DownloadOutlined />} onClick={() => handleDownload(item.name)}>Descargar</Button>,
-                      <Popconfirm title="¿Eliminar archivo?" onConfirm={() => handleDelete(item.name)}>
-                        <Button type="link" danger icon={<DeleteOutlined />}>Eliminar</Button>
-                      </Popconfirm>
-                    ]}
+                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}
                   >
-                    <List.Item.Meta
-                      title={<Text strong>{nombreLegible}</Text>}
-                      description={`Archivo real: ${item.name}`}
-                    />
+                    <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Text strong style={{ fontSize: '16px' }}>{docReq.replace(/_/g, ' ').replace(/Anios/g, 'Años')}</Text>
+                      {!isUploaded && <Text type="danger">Falta documento</Text>}
+                    </div>
+                    
+                    {isUploaded ? (
+                      <List
+                        size="small"
+                        style={{ width: '100%', marginTop: '8px', background: '#f8fafc', borderRadius: '6px' }}
+                        dataSource={uploadedFiles}
+                        renderItem={fileItem => (
+                          <List.Item
+                            actions={[
+                              <Button type="link" size="small" icon={<DownloadOutlined />} onClick={() => handleDownload(fileItem.name)}>Descargar</Button>,
+                              <Popconfirm title="¿Eliminar archivo?" onConfirm={() => handleDelete(fileItem.name)}>
+                                <Button type="link" danger size="small" icon={<DeleteOutlined />}>Eliminar</Button>
+                              </Popconfirm>
+                            ]}
+                          >
+                            <Space>
+                              <Text type="secondary">{fileItem.name}</Text>
+                              {calcularEstadoVigencia(fileItem, docReq)}
+                            </Space>
+                          </List.Item>
+                        )}
+                      />
+                    ) : (
+                      <Text type="secondary" style={{ marginTop: '8px', fontStyle: 'italic' }}>
+                        No hay archivo subido para este requisito.
+                      </Text>
+                    )}
                   </List.Item>
-                )
+                );
               }}
             />
           </Tabs.TabPane>

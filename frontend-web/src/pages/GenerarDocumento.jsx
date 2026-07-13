@@ -27,7 +27,7 @@ const GenerarDocumento = () => {
 
 
   return (
-    <div style={{ padding: '24px', maxWidth: '800px', margin: '0 auto' }}>
+    <div style={{ padding: '32px', maxWidth: '1600px', margin: '0 auto' }}>
       <Title level={2}>Generador de Documentos</Title>
       <Text type="secondary">Módulo de autocompletado de machotes para licitación</Text>
       

@@ -14,7 +14,21 @@ import BovedaSub4 from './pages/BovedaSub4';
 
 function App() {
   return (
-    <ConfigProvider theme={{ token: { colorPrimary: '#F5A623' } }}>
+    <ConfigProvider 
+      theme={{ 
+        token: { 
+          colorPrimary: '#F5A623',
+          borderRadius: 6,
+          fontFamily: "'Inter', 'Segoe UI', Roboto, sans-serif",
+          colorTextBase: '#1E293B'
+        },
+        components: {
+          Card: {
+            boxShadowTertiary: '0 4px 20px rgba(0,0,0,0.03)'
+          }
+        }
+      }}
+    >
       <BrowserRouter>
         <Routes>
           {/* Rutas Públicas (Sin Sidebar) */}

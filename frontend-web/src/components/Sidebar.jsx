@@ -79,18 +79,6 @@ const Sidebar = () => {
           style={{ borderRight: 0 }}
         />
       </div>
-
-      <div style={{ padding: '16px', borderTop: '1px solid #f0f0f0' }}>
-        <Button 
-          type="dashed" 
-          danger 
-          icon={<LogoutOutlined />} 
-          style={{ width: '100%' }}
-          onClick={() => navigate('/')}
-        >
-          Cambiar Empresa
-        </Button>
-      </div>
     </Sider>
   );
 };
