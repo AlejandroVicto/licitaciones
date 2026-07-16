@@ -39,6 +39,10 @@ const Sidebar = () => {
       label: 'Bóveda Digital',
       children: [
         {
+          key: '/dashboard/boveda/info',
+          label: 'Guía de Requisitos',
+        },
+        {
           key: '/dashboard/boveda/1',
           label: 'Legal y Acreditación',
         },

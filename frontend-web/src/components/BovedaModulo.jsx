@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, Card, Tabs, Select, Button, Upload, message, List, Popconfirm, Alert, Space, Tag } from 'antd';
+import { Typography, Card, Tabs, Select, Button, Upload, message, List, Popconfirm, Alert, Space, Tag, Input } from 'antd';
 import { UploadOutlined, DownloadOutlined, DeleteOutlined } from '@ant-design/icons';
 import useEmpresaStore from '../store/useEmpresaStore';
 import { getDocumentos, subirDocumento, eliminarDocumento, descargarDocumento } from '../services/api';
@@ -13,10 +13,11 @@ const BovedaModulo = ({ titulo, documentosPermitidos }) => {
   const navigate = useNavigate();
 
   const obtenerDiasVigencia = (docReq) => {
-    if (docReq.includes("Constancia_Situacion_Fiscal")) return 30;
-    if (docReq.includes("Opinion_Cumplimiento_32D_SAT")) return 30;
-    if (docReq.includes("Opinion_Cumplimiento_IMSS")) return 15;
-    if (docReq.includes("Comprobante_Domicilio")) return 90;
+    const docLower = docReq.toLowerCase();
+    if (docLower.includes("constancia_situacion_fiscal")) return 30;
+    if (docLower.includes("opinion_cumplimiento_32d_sat")) return 30;
+    if (docLower.includes("opinion_cumplimiento_imss")) return 15;
+    if (docLower.includes("comprobante_domicilio")) return 90;
     return null;
   };
 
@@ -46,9 +47,9 @@ const BovedaModulo = ({ titulo, documentosPermitidos }) => {
   const [tipoSeleccionado, setTipoSeleccionado] = useState(documentosPermitidos[0] || '');
   const [fileList, setFileList] = useState([]);
   const [uploading, setUploading] = useState(false);
+  const [customNames, setCustomNames] = useState({});
 
-  // Prefix del módulo, similar a Streamlit
-  const prefixModulo = titulo.split(":")[0].replace("ó", "o").replace(" ", "_");
+  // Eliminado prefixModulo porque guardaremos los archivos solo con su nombre (ej. INE_Representante_Legal.pdf)
 
   const cargarArchivos = async () => {
     if (!empresaSeleccionada) return;
@@ -69,7 +70,12 @@ const BovedaModulo = ({ titulo, documentosPermitidos }) => {
 
 
 
-  const archivosDelModulo = archivos.filter(a => a.name.startsWith(prefixModulo));
+  const archivosDelModulo = archivos.filter(a => {
+    return documentosPermitidos.some(doc => {
+      const docClean = doc.replace(/ /g, "_").replace(/\//g, "_").replace(/-/g, "_");
+      return a.name.includes(docClean);
+    });
+  });
 
   const handleUpload = async () => {
     if (fileList.length === 0) {
@@ -90,10 +96,17 @@ const BovedaModulo = ({ titulo, documentosPermitidos }) => {
         const file = fileList[i];
         const ext = file.name.split('.').pop().toLowerCase();
         
-        // Creamos una nueva instancia de archivo con el nombre esperado por el sistema
-        const nuevoNombre = (isMultiple && fileList.length > 1) 
-            ? `${prefixModulo}_${docClean}_${i+1}.${ext}` 
-            : `${prefixModulo}_${docClean}.${ext}`;
+        // Creamos una nueva instancia de archivo con el nombre esperado por el sistema (sin prefijo de módulo)
+        let customSuffix = '';
+        if (isMultiple) {
+          const userSuffix = customNames[file.uid];
+          // Si el usuario escribió un sufijo, lo usamos limpiándolo un poco. Si no, usamos un secuencial.
+          customSuffix = userSuffix ? `_${userSuffix.replace(/ /g, "_")}` : `_${i+1}`;
+        }
+
+        const nuevoNombre = isMultiple
+            ? `${docClean}${customSuffix}.${ext}` 
+            : `${docClean}.${ext}`;
             
         const renamedFile = new File([file], nuevoNombre, { type: file.type });
         await subirDocumento(empresaSeleccionada.id, renamedFile);
@@ -106,21 +119,32 @@ const BovedaModulo = ({ titulo, documentosPermitidos }) => {
       if (todosOk) {
         message.success('Documento(s) subidos correctamente');
         setFileList([]);
+        setCustomNames({});
         cargarArchivos();
       }
     }
   };
 
+  const isMultiple = tipoSeleccionado.includes("Acta_Constitutiva") || 
+                     tipoSeleccionado.includes("Declaracion_Anual_Previas") ||
+                     tipoSeleccionado.includes("Declaraciones_Provisionales") ||
+                     tipoSeleccionado.includes("Estados_Financieros");
+
   const uploadProps = {
     onRemove: (file) => {
       setFileList(prev => prev.filter(item => item.uid !== file.uid));
+      setCustomNames(prev => {
+        const copy = { ...prev };
+        delete copy[file.uid];
+        return copy;
+      });
     },
     beforeUpload: (file) => {
       setFileList(prev => [...prev, file]);
       return false; // Prevent auto upload
     },
     fileList,
-    multiple: tipoSeleccionado.includes("Acta_Constitutiva") || tipoSeleccionado.includes("Declaracion_Anual_Previas"),
+    multiple: isMultiple,
   };
 
   const handleDelete = async (fileName) => {
@@ -167,10 +191,63 @@ const BovedaModulo = ({ titulo, documentosPermitidos }) => {
                 </Select>
               </div>
 
+              {(() => {
+                const docClean = tipoSeleccionado.replace(/ /g, "_").replace(/\//g, "_").replace(/-/g, "_");
+                const uploadedFilesForSelected = archivosDelModulo.filter(f => f.name.includes(docClean));
+                
+                return uploadedFilesForSelected.length > 0 ? (
+                  <div style={{ marginBottom: '24px', padding: '16px', background: '#fffbe6', border: '1px solid #ffe58f', borderRadius: '8px' }}>
+                    <Text strong style={{ color: '#d48806', display: 'block', marginBottom: '8px' }}>Ya existen documentos subidos para este requisito:</Text>
+                    <List
+                      size="small"
+                      style={{ background: '#fff', borderRadius: '6px' }}
+                      dataSource={uploadedFilesForSelected}
+                      renderItem={fileItem => (
+                        <List.Item
+                          actions={[
+                            <Popconfirm title="¿Eliminar archivo?" onConfirm={() => handleDelete(fileItem.name)}>
+                              <Button type="text" danger size="small" icon={<DeleteOutlined />}>Eliminar</Button>
+                            </Popconfirm>
+                          ]}
+                        >
+                          <Space>
+                            <Text type="secondary">{fileItem.name}</Text>
+                            {calcularEstadoVigencia(fileItem, tipoSeleccionado)}
+                          </Space>
+                        </List.Item>
+                      )}
+                    />
+                  </div>
+                ) : null;
+              })()}
+
               <div style={{ marginTop: '24px' }}>
                 <Upload {...uploadProps}>
                   <Button icon={<UploadOutlined />}>Seleccionar archivo(s)</Button>
                 </Upload>
+                
+                {/* Opciones para nombramiento personalizado si es múltiple */}
+                {isMultiple && fileList.length > 0 && (
+                  <div style={{ marginTop: '16px', padding: '16px', background: '#fafafa', border: '1px dashed #d9d9d9', borderRadius: '8px' }}>
+                    <Text strong style={{ display: 'block', marginBottom: '12px' }}>
+                      Asigna un nombre o identificador a cada archivo (ej. modificacion_2010):
+                    </Text>
+                    {fileList.map((file, index) => (
+                      <div key={file.uid} style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                        <Text type="secondary" style={{ width: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {file.name}
+                        </Text>
+                        <Input 
+                          placeholder={`Identificador (Opcional)`} 
+                          value={customNames[file.uid] || ''}
+                          onChange={(e) => setCustomNames({ ...customNames, [file.uid]: e.target.value })}
+                          style={{ marginLeft: '12px', flex: 1 }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 <Button
                   type="primary"
                   onClick={handleUpload}
@@ -210,10 +287,7 @@ const BovedaModulo = ({ titulo, documentosPermitidos }) => {
                         renderItem={fileItem => (
                           <List.Item
                             actions={[
-                              <Button type="link" size="small" icon={<DownloadOutlined />} onClick={() => handleDownload(fileItem.name)}>Descargar</Button>,
-                              <Popconfirm title="¿Eliminar archivo?" onConfirm={() => handleDelete(fileItem.name)}>
-                                <Button type="link" danger size="small" icon={<DeleteOutlined />}>Eliminar</Button>
-                              </Popconfirm>
+                              <Button type="link" size="small" icon={<DownloadOutlined />} onClick={() => handleDownload(fileItem.name)}>Descargar</Button>
                             ]}
                           >
                             <Space>

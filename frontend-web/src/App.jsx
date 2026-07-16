@@ -11,6 +11,7 @@ import BovedaSub1 from './pages/BovedaSub1';
 import BovedaSub2 from './pages/BovedaSub2';
 import BovedaSub3 from './pages/BovedaSub3';
 import BovedaSub4 from './pages/BovedaSub4';
+import BovedaInfo from './pages/BovedaInfo';
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
             <Route path="informacion" element={<Informacion />} />
             <Route path="generar" element={<GenerarDocumento />} />
             <Route path="editar" element={<EditarEmpresa />} />
+            <Route path="boveda/info" element={<BovedaInfo />} />
             <Route path="boveda/1" element={<BovedaSub1 />} />
             <Route path="boveda/2" element={<BovedaSub2 />} />
             <Route path="boveda/3" element={<BovedaSub3 />} />
