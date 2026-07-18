@@ -1,6 +1,6 @@
 # Portal de Licitaciones y Boveda Digital - Documentacion Tecnica
 
-Este repositorio contiene el codigo fuente del Portal de Licitaciones y Boveda Digital. El sistema fue migrado de una arquitectura monolithica inicial a un stack moderno de dos capas (Frontend SPA + Backend API REST) enfocado en escalabilidad, seguridad de accesos y separacion de responsabilidades.
+Este repositorio contiene el codigo fuente del Portal de Licitaciones y Boveda Digital. 
 
 El objetivo de este documento es proporcionar el contexto tecnico necesario para que cualquier desarrollador que asuma el mantenimiento del proyecto pueda comprender la arquitectura, el flujo de datos y las reglas de negocio implementadas.
 
