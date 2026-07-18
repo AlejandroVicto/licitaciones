@@ -16,7 +16,8 @@ const docs = [
   "Padron_Contratistas_Estatal",
   "Constancia_No_Inhabilitacion",
   "Identificacion_Patronal_IMSS",
-  "Padron_Contratistas_SHTFP"
+  "Padron_Contratistas_SHTFP",
+  "Politicas_de_Integridad"
 ];
 
 const BovedaSub1 = () => (

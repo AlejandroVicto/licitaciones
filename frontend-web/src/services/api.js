@@ -1,5 +1,4 @@
 const API_URL = 'http://127.0.0.1:8000';
-
 export const getEmpresas = async () => {
   const response = await fetch(`${API_URL}/empresas`);
   if (!response.ok) throw new Error('Error al obtener empresas');
@@ -23,7 +22,7 @@ export const descargarMachote = async (empresaId) => {
     method: 'POST',
   });
   if (!response.ok) throw new Error('Error al generar el documento');
-  
+
   // Intentar obtener el nombre del archivo original
   const contentDisposition = response.headers.get('Content-Disposition');
   let filename = `Machote_Empresa_${empresaId}.docx`;
@@ -80,6 +79,16 @@ export const eliminarSocio = async (socioId) => {
   return response.json();
 };
 
+export const updateSocioAcciones = async (socioId, acciones) => {
+  const response = await fetch(`${API_URL}/socios/${socioId}/acciones`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ acciones }),
+  });
+  if (!response.ok) throw new Error('Error al actualizar acciones');
+  return response.json();
+};
+
 export const getDocumentos = async (empresaId) => {
   const response = await fetch(`${API_URL}/empresas/${empresaId}/documentos`);
   if (!response.ok) throw new Error('Error al obtener documentos');
@@ -89,7 +98,7 @@ export const getDocumentos = async (empresaId) => {
 export const subirDocumento = async (empresaId, file) => {
   const formData = new FormData();
   formData.append('file', file);
-  
+
   const response = await fetch(`${API_URL}/empresas/${empresaId}/documentos`, {
     method: 'POST',
     body: formData,
@@ -109,7 +118,7 @@ export const eliminarDocumento = async (empresaId, fileName) => {
 export const descargarDocumento = async (empresaId, fileName) => {
   const response = await fetch(`${API_URL}/empresas/${empresaId}/documentos/${encodeURIComponent(fileName)}`);
   if (!response.ok) throw new Error('Error al descargar el documento');
-  
+
   const blob = await response.blob();
   const url = window.URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -119,4 +128,59 @@ export const descargarDocumento = async (empresaId, fileName) => {
   a.click();
   a.remove();
   window.URL.revokeObjectURL(url);
+};
+
+export const loginUser = async (credentials) => {
+  const response = await fetch(`${API_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(credentials),
+  });
+  if (!response.ok) throw new Error('Usuario o contraseña incorrectos');
+  return response.json();
+};
+
+export const registerUser = async (userData) => {
+  const response = await fetch(`${API_URL}/auth/registrar-usuario`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(userData),
+  });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || 'Error al registrar usuario');
+  }
+  return response.json();
+};
+
+export const getUsuarios = async () => {
+  const response = await fetch(`${API_URL}/usuarios`);
+  if (!response.ok) throw new Error('Error al obtener usuarios');
+  return response.json();
+};
+
+export const updatePermisosUsuario = async (usuarioId, data) => {
+  const response = await fetch(`${API_URL}/usuarios/${usuarioId}/permisos`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || 'Error al actualizar permisos');
+  }
+  return response.json();
+};
+
+export const deleteUsuario = async (usuarioId, super_user_password) => {
+  const response = await fetch(`${API_URL}/usuarios/${usuarioId}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ super_user_password }),
+  });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || 'Error al eliminar usuario');
+  }
+  return response.json();
 };

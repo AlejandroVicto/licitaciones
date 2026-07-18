@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Form, Input, Button, Row, Col, Typography, Card, Divider, message, Table, Modal } from 'antd';
-import { SaveOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { Form, Input, InputNumber, Button, Row, Col, Typography, Card, Divider, message, Table, Modal, Space } from 'antd';
+import { SaveOutlined, DeleteOutlined, PlusOutlined, EditOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import useEmpresaStore from '../store/useEmpresaStore';
 
@@ -17,11 +17,19 @@ const EditarEmpresa = () => {
   const cargarSocios = useEmpresaStore((state) => state.cargarSocios);
   const crearSocio = useEmpresaStore((state) => state.crearSocio);
   const borrarSocio = useEmpresaStore((state) => state.borrarSocio);
+  const actualizarSocioAcciones = useEmpresaStore((state) => state.actualizarSocioAcciones);
 
   const [loading, setLoading] = useState(false);
   const [socios, setSocios] = useState([]);
   const [loadingSocios, setLoadingSocios] = useState(false);
+  
+  // Agregar socio
   const [isModalVisible, setIsModalVisible] = useState(false);
+  
+  // Editar acciones
+  const [isEditAccionesVisible, setIsEditAccionesVisible] = useState(false);
+  const [socioToEdit, setSocioToEdit] = useState(null);
+  const [editAccionesForm] = Form.useForm();
 
   useEffect(() => {
     if (empresaSeleccionada) {
@@ -72,6 +80,23 @@ const EditarEmpresa = () => {
     }
   };
 
+  const handleEditAccionesClick = (socio) => {
+    setSocioToEdit(socio);
+    editAccionesForm.setFieldsValue({ acciones: socio.acciones });
+    setIsEditAccionesVisible(true);
+  };
+
+  const handleSaveAcciones = async (values) => {
+    try {
+      await actualizarSocioAcciones(socioToEdit.id, values.acciones);
+      message.success('Acciones actualizadas');
+      setIsEditAccionesVisible(false);
+      loadSocios();
+    } catch (error) {
+      message.error('Error al actualizar acciones');
+    }
+  };
+
   const handleDeleteSocio = async (socioId) => {
     try {
       await borrarSocio(socioId);
@@ -85,11 +110,15 @@ const EditarEmpresa = () => {
   const socioColumns = [
     { title: 'Nombre', dataIndex: 'nombre', key: 'nombre' },
     { title: 'RFC', dataIndex: 'rfc', key: 'rfc' },
+    { title: 'Acciones', dataIndex: 'acciones', key: 'acciones' },
     {
       title: 'Acciones',
-      key: 'acciones',
+      key: 'acciones_tabla',
       render: (_, record) => (
-        <Button danger icon={<DeleteOutlined />} onClick={() => handleDeleteSocio(record.id)} />
+        <Space>
+          <Button icon={<EditOutlined />} onClick={() => handleEditAccionesClick(record)} />
+          <Button danger icon={<DeleteOutlined />} onClick={() => handleDeleteSocio(record.id)} />
+        </Space>
       )
     }
   ];
@@ -114,6 +143,13 @@ const EditarEmpresa = () => {
             <Col xs={24} md={12}>
               <Form.Item name="rfc" label="RFC" rules={[{ required: true, message: 'Requerido' }]}>
                 <Input size="large" />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col xs={24}>
+              <Form.Item name="objeto_social" label="Objeto Social" rules={[{ required: true, message: 'Requerido' }]}>
+                <Input.TextArea rows={4} placeholder="Descripción del objeto social de la empresa..." />
               </Form.Item>
             </Col>
           </Row>
@@ -238,8 +274,27 @@ const EditarEmpresa = () => {
           <Form.Item name="rfc" label="RFC">
             <Input />
           </Form.Item>
+          <Form.Item name="acciones" label="Número de Acciones">
+            <InputNumber style={{ width: '100%' }} />
+          </Form.Item>
           <Form.Item style={{ textAlign: 'right', marginBottom: 0 }}>
             <Button type="primary" htmlType="submit">Guardar</Button>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        title={`Editar Acciones: ${socioToEdit?.nombre}`}
+        open={isEditAccionesVisible}
+        onCancel={() => setIsEditAccionesVisible(false)}
+        footer={null}
+      >
+        <Form form={editAccionesForm} layout="vertical" onFinish={handleSaveAcciones}>
+          <Form.Item name="acciones" label="Número de Acciones" rules={[{ required: true }]}>
+            <InputNumber style={{ width: '100%' }} />
+          </Form.Item>
+          <Form.Item style={{ textAlign: 'right', marginBottom: 0 }}>
+            <Button type="primary" htmlType="submit">Actualizar</Button>
           </Form.Item>
         </Form>
       </Modal>

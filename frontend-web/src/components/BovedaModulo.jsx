@@ -4,12 +4,16 @@ import { UploadOutlined, DownloadOutlined, DeleteOutlined } from '@ant-design/ic
 import useEmpresaStore from '../store/useEmpresaStore';
 import { getDocumentos, subirDocumento, eliminarDocumento, descargarDocumento } from '../services/api';
 import { useNavigate } from 'react-router-dom';
+import useAuthStore from '../store/useAuthStore';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 
 const BovedaModulo = ({ titulo, documentosPermitidos }) => {
   const empresaSeleccionada = useEmpresaStore((state) => state.empresaSeleccionada);
+  const { usuarioActivo } = useAuthStore();
+  const permisos = usuarioActivo?.permisos || [];
+  const canUpload = permisos.includes('Boveda_Subir');
   const navigate = useNavigate();
 
   const obtenerDiasVigencia = (docReq) => {
@@ -173,93 +177,95 @@ const BovedaModulo = ({ titulo, documentosPermitidos }) => {
       <p style={{ fontSize: '16px' }}>Gestionando documentos para: <Text strong>{empresaSeleccionada.nombre}</Text></p>
       
       <Card title={titulo} bordered={false} style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-        <Tabs defaultActiveKey="1">
+        <Tabs defaultActiveKey={canUpload ? "1" : "2"}>
           
-          <Tabs.TabPane tab="Subir Documentos" key="1">
-            <div style={{ padding: '16px 0' }}>
-              <div style={{ marginBottom: '16px' }}>
-                <Text strong>Selecciona el documento específico a subir:</Text>
-                <Select 
-                  style={{ width: '100%', marginTop: '8px' }} 
-                  value={tipoSeleccionado} 
-                  onChange={setTipoSeleccionado}
-                >
-                  {documentosPermitidos.map(doc => {
-                    const label = doc.replace(/_/g, ' ').replace(/Anios/g, 'Años');
-                    return <Option key={doc} value={doc}>{label}</Option>;
-                  })}
-                </Select>
+          {canUpload && (
+            <Tabs.TabPane tab="Subir Documentos" key="1">
+              <div style={{ padding: '16px 0' }}>
+                <div style={{ marginBottom: '16px' }}>
+                  <Text strong>Selecciona el documento específico a subir:</Text>
+                  <Select 
+                    style={{ width: '100%', marginTop: '8px' }} 
+                    value={tipoSeleccionado} 
+                    onChange={setTipoSeleccionado}
+                  >
+                    {documentosPermitidos.map(doc => {
+                      const label = doc.replace(/_/g, ' ').replace(/Anios/g, 'Años');
+                      return <Option key={doc} value={doc}>{label}</Option>;
+                    })}
+                  </Select>
+                </div>
+
+                {(() => {
+                  const docClean = tipoSeleccionado.replace(/ /g, "_").replace(/\//g, "_").replace(/-/g, "_");
+                  const uploadedFilesForSelected = archivosDelModulo.filter(f => f.name.includes(docClean));
+                  
+                  return uploadedFilesForSelected.length > 0 ? (
+                    <div style={{ marginBottom: '24px', padding: '16px', background: '#fffbe6', border: '1px solid #ffe58f', borderRadius: '8px' }}>
+                      <Text strong style={{ color: '#d48806', display: 'block', marginBottom: '8px' }}>Ya existen documentos subidos para este requisito:</Text>
+                      <List
+                        size="small"
+                        style={{ background: '#fff', borderRadius: '6px' }}
+                        dataSource={uploadedFilesForSelected}
+                        renderItem={fileItem => (
+                          <List.Item
+                            actions={[
+                              <Popconfirm title="¿Eliminar archivo?" onConfirm={() => handleDelete(fileItem.name)}>
+                                <Button type="text" danger size="small" icon={<DeleteOutlined />}>Eliminar</Button>
+                              </Popconfirm>
+                            ]}
+                          >
+                            <Space>
+                              <Text type="secondary">{fileItem.name}</Text>
+                              {calcularEstadoVigencia(fileItem, tipoSeleccionado)}
+                            </Space>
+                          </List.Item>
+                        )}
+                      />
+                    </div>
+                  ) : null;
+                })()}
+
+                <div style={{ marginTop: '24px' }}>
+                  <Upload {...uploadProps}>
+                    <Button icon={<UploadOutlined />}>Seleccionar archivo(s)</Button>
+                  </Upload>
+                  
+                  {/* Opciones para nombramiento personalizado si es múltiple */}
+                  {isMultiple && fileList.length > 0 && (
+                    <div style={{ marginTop: '16px', padding: '16px', background: '#fafafa', border: '1px dashed #d9d9d9', borderRadius: '8px' }}>
+                      <Text strong style={{ display: 'block', marginBottom: '12px' }}>
+                        Asigna un nombre o identificador a cada archivo (ej. modificacion_2010):
+                      </Text>
+                      {fileList.map((file, index) => (
+                        <div key={file.uid} style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                          <Text type="secondary" style={{ width: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {file.name}
+                          </Text>
+                          <Input 
+                            placeholder={`Identificador (Opcional)`} 
+                            value={customNames[file.uid] || ''}
+                            onChange={(e) => setCustomNames({ ...customNames, [file.uid]: e.target.value })}
+                            style={{ marginLeft: '12px', flex: 1 }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <Button
+                    type="primary"
+                    onClick={handleUpload}
+                    disabled={fileList.length === 0}
+                    loading={uploading}
+                    style={{ marginTop: 16, display: 'block' }}
+                  >
+                    {uploading ? 'Subiendo...' : 'Subir Documento'}
+                  </Button>
+                </div>
               </div>
-
-              {(() => {
-                const docClean = tipoSeleccionado.replace(/ /g, "_").replace(/\//g, "_").replace(/-/g, "_");
-                const uploadedFilesForSelected = archivosDelModulo.filter(f => f.name.includes(docClean));
-                
-                return uploadedFilesForSelected.length > 0 ? (
-                  <div style={{ marginBottom: '24px', padding: '16px', background: '#fffbe6', border: '1px solid #ffe58f', borderRadius: '8px' }}>
-                    <Text strong style={{ color: '#d48806', display: 'block', marginBottom: '8px' }}>Ya existen documentos subidos para este requisito:</Text>
-                    <List
-                      size="small"
-                      style={{ background: '#fff', borderRadius: '6px' }}
-                      dataSource={uploadedFilesForSelected}
-                      renderItem={fileItem => (
-                        <List.Item
-                          actions={[
-                            <Popconfirm title="¿Eliminar archivo?" onConfirm={() => handleDelete(fileItem.name)}>
-                              <Button type="text" danger size="small" icon={<DeleteOutlined />}>Eliminar</Button>
-                            </Popconfirm>
-                          ]}
-                        >
-                          <Space>
-                            <Text type="secondary">{fileItem.name}</Text>
-                            {calcularEstadoVigencia(fileItem, tipoSeleccionado)}
-                          </Space>
-                        </List.Item>
-                      )}
-                    />
-                  </div>
-                ) : null;
-              })()}
-
-              <div style={{ marginTop: '24px' }}>
-                <Upload {...uploadProps}>
-                  <Button icon={<UploadOutlined />}>Seleccionar archivo(s)</Button>
-                </Upload>
-                
-                {/* Opciones para nombramiento personalizado si es múltiple */}
-                {isMultiple && fileList.length > 0 && (
-                  <div style={{ marginTop: '16px', padding: '16px', background: '#fafafa', border: '1px dashed #d9d9d9', borderRadius: '8px' }}>
-                    <Text strong style={{ display: 'block', marginBottom: '12px' }}>
-                      Asigna un nombre o identificador a cada archivo (ej. modificacion_2010):
-                    </Text>
-                    {fileList.map((file, index) => (
-                      <div key={file.uid} style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                        <Text type="secondary" style={{ width: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {file.name}
-                        </Text>
-                        <Input 
-                          placeholder={`Identificador (Opcional)`} 
-                          value={customNames[file.uid] || ''}
-                          onChange={(e) => setCustomNames({ ...customNames, [file.uid]: e.target.value })}
-                          style={{ marginLeft: '12px', flex: 1 }}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                <Button
-                  type="primary"
-                  onClick={handleUpload}
-                  disabled={fileList.length === 0}
-                  loading={uploading}
-                  style={{ marginTop: 16, display: 'block' }}
-                >
-                  {uploading ? 'Subiendo...' : 'Subir Documento'}
-                </Button>
-              </div>
-            </div>
-          </Tabs.TabPane>
+            </Tabs.TabPane>
+          )}
           
           <Tabs.TabPane tab="Explorar y Descargar" key="2">
             <List

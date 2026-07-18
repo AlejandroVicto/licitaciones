@@ -24,7 +24,10 @@ const BovedaInfo = () => {
         >
           <Space direction="vertical" size="small" style={{ width: '100%' }}>
             <Text><CheckCircleOutlined style={{ color: '#52c41a', marginRight: '6px' }} /> <b>Acta Constitutiva y Modificaciones:</b> Escrituras públicas inscritas en el Registro Público correspondiente.</Text>
+            <Text><CheckCircleOutlined style={{ color: '#52c41a', marginRight: '6px' }} /> <b>Identificación Oficial del Administrador Único:</b> INE, pasaporte o cartilla vigente.</Text>
             <Text><CheckCircleOutlined style={{ color: '#52c41a', marginRight: '6px' }} /> <b>Identificación Oficial del Representante Legal:</b> INE, pasaporte o cartilla vigente.</Text>
+            <Text><CheckCircleOutlined style={{ color: '#52c41a', marginRight: '6px' }} /> <b>Comprobante de Domicilio del Administrador Único:</b> Recibo de luz, agua o teléfono (vigencia máxima de 90 días).</Text>
+            <Text><CheckCircleOutlined style={{ color: '#52c41a', marginRight: '6px' }} /> <b>Comprobante de Domicilio del Representante Legal:</b> Recibo de luz, agua o teléfono (vigencia máxima de 90 días).</Text>
             <Text><CheckCircleOutlined style={{ color: '#52c41a', marginRight: '6px' }} /> <b>Poder Notarial:</b> Instrumento legal del apoderado (si aplica) e identificación oficial.</Text>
             <Text><CheckCircleOutlined style={{ color: '#52c41a', marginRight: '6px' }} /> <b>Constancia de Situación Fiscal (SAT):</b> Actualización mensual (vigencia máxima de 30 días).</Text>
             <Text><CheckCircleOutlined style={{ color: '#52c41a', marginRight: '6px' }} /> <b>Opinión de Cumplimiento SAT (32-D):</b> Opinión en sentido positivo (vigencia máxima de 30 días).</Text>
@@ -35,6 +38,7 @@ const BovedaInfo = () => {
             <Text><CheckCircleOutlined style={{ color: '#52c41a', marginRight: '6px' }} /> <b>Constancia de No Inhabilitación:</b> Emitida por la Secretaría de Honestidad (vigente).</Text>
             <Text><CheckCircleOutlined style={{ color: '#52c41a', marginRight: '6px' }} /> <b>Identificación Patronal:</b> Tarjeta del IMSS.</Text>
             <Text><CheckCircleOutlined style={{ color: '#52c41a', marginRight: '6px' }} /> <b>Padrón de Contratistas:</b> Secretaría de honestidad, transparencia y función publica.</Text>
+            <Text><CheckCircleOutlined style={{ color: '#52c41a', marginRight: '6px' }} /> <b>Políticas de Integridad:</b> Documento de políticas de integridad empresarial y anticorrupción.</Text>
           </Space>
         </Panel>
 

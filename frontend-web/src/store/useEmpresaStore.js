@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { getEmpresas, crearEmpresa, actualizarEmpresa, getSocios, agregarSocio, eliminarSocio } from '../services/api';
+import { getEmpresas, crearEmpresa, actualizarEmpresa, getSocios, agregarSocio, eliminarSocio, updateSocioAcciones } from '../services/api';
 
 const useEmpresaStore = create((set) => ({
   empresas: [],
@@ -63,6 +63,15 @@ const useEmpresaStore = create((set) => ({
       return await eliminarSocio(socioId);
     } catch (error) {
       console.error("Error al eliminar socio:", error);
+      throw error;
+    }
+  },
+
+  actualizarSocioAcciones: async (socioId, acciones) => {
+    try {
+      return await updateSocioAcciones(socioId, acciones);
+    } catch (error) {
+      console.error("Error al actualizar acciones de socio:", error);
       throw error;
     }
   }

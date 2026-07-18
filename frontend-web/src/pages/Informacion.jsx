@@ -1,12 +1,38 @@
-import React, { useEffect } from 'react';
-import { Typography, Card, Row, Col, Divider, Descriptions } from 'antd';
-import { InfoCircleOutlined } from '@ant-design/icons';
+import React, { useEffect, useState } from 'react';
+import { Typography, Card, Row, Col, Divider, Descriptions, Table, message } from 'antd';
+import { InfoCircleOutlined, TeamOutlined } from '@ant-design/icons';
 import useEmpresaStore from '../store/useEmpresaStore';
 
 const { Title, Text, Paragraph } = Typography;
 
 const Informacion = () => {
   const empresaSeleccionada = useEmpresaStore((state) => state.empresaSeleccionada);
+  const cargarSocios = useEmpresaStore((state) => state.cargarSocios);
+  const [socios, setSocios] = useState([]);
+  const [loadingSocios, setLoadingSocios] = useState(false);
+
+  useEffect(() => {
+    const fetchSocios = async () => {
+      if (empresaSeleccionada) {
+        setLoadingSocios(true);
+        try {
+          const data = await cargarSocios(empresaSeleccionada.id);
+          setSocios(data);
+        } catch (error) {
+          message.error("No se pudieron cargar los socios");
+        } finally {
+          setLoadingSocios(false);
+        }
+      }
+    };
+    fetchSocios();
+  }, [empresaSeleccionada, cargarSocios]);
+
+  const socioColumns = [
+    { title: 'Nombre', dataIndex: 'nombre', key: 'nombre' },
+    { title: 'RFC', dataIndex: 'rfc', key: 'rfc' },
+    { title: 'Acciones', dataIndex: 'acciones', key: 'acciones' }
+  ];
 
   return (
     <div style={{ padding: '32px', maxWidth: '1600px', margin: '0 auto' }}>
@@ -46,6 +72,10 @@ const Informacion = () => {
           <Descriptions.Item label="Razón Social">{empresaSeleccionada.nombre}</Descriptions.Item>
           <Descriptions.Item label="RFC">{empresaSeleccionada.rfc}</Descriptions.Item>
           
+          <Descriptions.Item label="Objeto Social" span={2}>
+            {empresaSeleccionada.objeto_social || 'N/A'}
+          </Descriptions.Item>
+          
           <Descriptions.Item label="Administrador Único">{empresaSeleccionada.admin_unico || 'N/A'}</Descriptions.Item>
           <Descriptions.Item label="RFC Administrador">{empresaSeleccionada.rfc_admin_unico || 'N/A'}</Descriptions.Item>
           
@@ -66,6 +96,20 @@ const Informacion = () => {
           <Descriptions.Item label="Teléfono">{empresaSeleccionada.telefono || 'N/A'}</Descriptions.Item>
         </Descriptions>
       </div>
+
+      <Divider />
+      
+      <Title level={4}>Socios / Accionistas</Title>
+      <Card bordered={false} style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.05)', borderRadius: '8px', marginBottom: '24px' }}>
+        <Table 
+          columns={socioColumns} 
+          dataSource={socios} 
+          rowKey="id" 
+          pagination={false} 
+          loading={loadingSocios}
+          locale={{ emptyText: 'No hay socios registrados para esta empresa.' }}
+        />
+      </Card>
 
       <Divider />
       

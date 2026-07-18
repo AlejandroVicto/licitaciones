@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, Row, Col, Typography, Card, Divider, message } from 'antd';
+import { Form, Input, InputNumber, Button, Row, Col, Typography, Card, Divider, message } from 'antd';
 import { SaveOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { PlusOutlined, MinusCircleOutlined } from '@ant-design/icons';
@@ -60,6 +60,13 @@ const FormularioEmpresa = () => {
             <Col xs={24} md={12}>
               <Form.Item name="rfc" label="RFC" rules={[{ required: true, message: 'Requerido' }]}>
                 <Input placeholder="Ej. ABC123456T8" size="large" />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col xs={24}>
+              <Form.Item name="objeto_social" label="Objeto Social" rules={[{ required: true, message: 'Requerido' }]}>
+                <Input.TextArea rows={4} placeholder="Descripción del objeto social de la empresa..." />
               </Form.Item>
             </Col>
           </Row>
@@ -151,7 +158,7 @@ const FormularioEmpresa = () => {
               <>
                 {fields.map(({ key, name, ...restField }) => (
                   <Row gutter={16} key={key} align="middle">
-                    <Col xs={24} md={10}>
+                    <Col xs={24} md={8}>
                       <Form.Item
                         {...restField}
                         name={[name, 'nombre']}
@@ -160,12 +167,20 @@ const FormularioEmpresa = () => {
                         <Input placeholder="Nombre Completo" />
                       </Form.Item>
                     </Col>
-                    <Col xs={24} md={10}>
+                    <Col xs={24} md={8}>
                       <Form.Item
                         {...restField}
                         name={[name, 'rfc']}
                       >
                         <Input placeholder="RFC del Socio" />
+                      </Form.Item>
+                    </Col>
+                    <Col xs={24} md={4}>
+                      <Form.Item
+                        {...restField}
+                        name={[name, 'acciones']}
+                      >
+                        <InputNumber placeholder="No. Acciones" style={{ width: '100%' }} />
                       </Form.Item>
                     </Col>
                     <Col xs={24} md={4} style={{ marginBottom: '24px' }}>

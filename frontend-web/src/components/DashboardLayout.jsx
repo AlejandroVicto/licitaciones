@@ -4,12 +4,14 @@ import { LogoutOutlined, BankOutlined, UserOutlined } from '@ant-design/icons';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import useEmpresaStore from '../store/useEmpresaStore';
+import useAuthStore from '../store/useAuthStore';
 
 const { Content, Header } = Layout;
 const { Text } = Typography;
 
 const DashboardLayout = () => {
   const empresaSeleccionada = useEmpresaStore((state) => state.empresaSeleccionada);
+  const usuarioActivo = useAuthStore((state) => state.usuarioActivo);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -47,7 +49,7 @@ const DashboardLayout = () => {
           <Space size="middle" align="center">
             <Space style={{ background: '#f1f5f9', padding: '4px 16px', borderRadius: '20px' }}>
               <UserOutlined style={{ color: '#64748b' }} />
-              <Text style={{ color: '#475569' }}>Sesión Activa</Text>
+              <Text style={{ color: '#475569', fontWeight: 'bold' }}>{usuarioActivo?.username || 'Usuario'}</Text>
             </Space>
             <Button 
               type="text" 
